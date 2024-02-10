@@ -52,6 +52,6 @@ func getVariable(name string) string {
 		return v.value.String()
 	} else {
 		slog.Error("undefined variable or default", "name", name)
-		return name
+		return ""
 	}
 }
