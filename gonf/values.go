@@ -1,23 +1,41 @@
 package gonf
 
 type Value interface {
-	Equals(Value) bool
+	Bytes() []byte
 	String() string
 }
 
-// ----- String variables ------------------------------------------------------
+// ----- BytesValue -----------------------------------------------------------------
+type BytesValue struct {
+	value []byte
+}
+
+func (b BytesValue) Bytes() []byte {
+	return b.value
+}
+
+func (b BytesValue) String() string {
+	return string(b.value[:])
+}
+
+func Bytes(value []byte) *BytesValue {
+	return &BytesValue{value}
+}
+
+// ----- StringValue ----------------------------------------------------------------
 type StringValue struct {
-	Value string
+	value string
 }
 
-func (s StringValue) Equals(v Value) bool {
-	sv, ok := v.(StringValue)
-	return ok && s.Value == sv.Value
+func (s StringValue) Bytes() []byte {
+	return []byte(s.value)
 }
-
 func (s StringValue) String() string {
-	// TODO handle interpolation
-	return s.Value
+	return s.value
+}
+
+func String(value string) *StringValue {
+	return &StringValue{value}
 }
 
 // TODO lists

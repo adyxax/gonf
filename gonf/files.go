@@ -5,9 +5,7 @@ import (
 	"crypto/sha256"
 	"io"
 	"log/slog"
-	"net/url"
 	"os"
-	"text/template"
 )
 
 // ----- Globals ---------------------------------------------------------------
@@ -19,26 +17,22 @@ func init() {
 }
 
 // ----- Public ----------------------------------------------------------------
-func File(filename string, contents []byte) *FilePromise {
-	return &FilePromise{
-		chain:             nil,
-		contents:          contents,
-		err:               nil,
-		filename:          filename,
-		status:            PROMISED,
-		templateFunctions: nil,
-		useTemplate:       false,
-	}
+type FilePromise struct {
+	chain    []Promise
+	contents Value
+	err      error
+	filename Value
+	status   Status
 }
 
-type FilePromise struct {
-	chain             []Promise
-	contents          []byte
-	err               error
-	filename          string
-	status            Status
-	templateFunctions map[string]any
-	useTemplate       bool
+func File(filename Value, contents Value) *FilePromise {
+	return &FilePromise{
+		chain:    nil,
+		contents: contents,
+		err:      nil,
+		filename: filename,
+		status:   PROMISED,
+	}
 }
 
 func (f *FilePromise) IfRepaired(p ...Promise) Promise {
@@ -52,34 +46,17 @@ func (f *FilePromise) Promise() Promise {
 }
 
 func (f *FilePromise) Resolve() {
-	if f.useTemplate {
-		tpl := template.New(f.filename)
-		tpl.Option("missingkey=error")
-		tpl.Funcs(builtinTemplateFunctions)
-		tpl.Funcs(f.templateFunctions)
-		if ttpl, err := tpl.Parse(string(f.contents)); err != nil {
-			f.status = BROKEN
-			slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
-			return
-		} else {
-			var buff bytes.Buffer
-			if err := ttpl.Execute(&buff, 0 /* TODO */); err != nil {
-				f.status = BROKEN
-				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
-				return
-			}
-			f.contents = buff.Bytes()
-		}
-	}
+	filename := f.filename.String()
 	var sumFile []byte
-	sumFile, f.err = sha256sumOfFile(f.filename)
+	sumFile, f.err = sha256sumOfFile(filename)
 	if f.err != nil {
 		f.status = BROKEN
 		return
 	}
-	sumContents := sha256sum(f.contents)
+	contents := f.contents.Bytes()
+	sumContents := sha256sum(contents)
 	if !bytes.Equal(sumFile, sumContents) {
-		if f.err = writeFile(f.filename, f.contents); f.err != nil {
+		if f.err = writeFile(filename, contents); f.err != nil {
 			f.status = BROKEN
 			slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
 			return
@@ -95,24 +72,7 @@ func (f *FilePromise) Resolve() {
 	slog.Debug("file", "filename", f.filename, "status", f.status)
 }
 
-func Template(filename string, contents []byte) *FilePromise {
-	f := File(filename, contents)
-	f.useTemplate = true
-	return f
-}
-
-func TemplateWith(filename string, contents []byte, templateFunctions map[string]any) *FilePromise {
-	f := Template(filename, contents)
-	f.templateFunctions = templateFunctions
-	return f
-}
-
 // ----- Internal --------------------------------------------------------------
-var builtinTemplateFunctions = map[string]any{
-	"encodeURIQueryParameter": url.QueryEscape,
-	"var":                     getVariable,
-}
-
 func resolveFiles() (status Status) {
 	status = KEPT
 	for _, f := range files {
