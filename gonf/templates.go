@@ -19,27 +19,26 @@ func init() {
 // ----- Public ----------------------------------------------------------------
 type TemplateValue struct {
 	contents []byte
-	name     string
+	data     string
 }
 
 func (t *TemplateValue) Bytes() []byte {
-	var buff bytes.Buffer
-	if err := templates.ExecuteTemplate(&buff, t.name, nil /* no data needed */); err != nil {
-		slog.Error("template", "step", "ExecuteTemplate", "name", t.name, "error", err)
-		return nil
+	if t.contents == nil {
+		tpl := templates.New("")
+		if _, err := tpl.Parse(t.data); err != nil {
+			slog.Error("template", "step", "Parse", "data", t.data, "error", err)
+			return nil
+		}
+		var buff bytes.Buffer
+		if err := tpl.Execute(&buff, nil /* no data needed */); err != nil {
+			slog.Error("template", "step", "Execute", "data", t.data, "error", err)
+			return nil
+		}
+		t.contents = buff.Bytes()
 	}
-	return buff.Bytes()
+	return t.contents
 }
 
 func (t TemplateValue) String() string {
 	return string(t.Bytes()[:])
-}
-
-func Template(name string, contents []byte) *TemplateValue {
-	tpl := templates.New(name)
-	if _, err := tpl.Parse(string(contents)); err != nil {
-		slog.Error("template", "step", "Parse", "name", name, "error", err)
-		return nil
-	}
-	return &TemplateValue{contents, name}
 }

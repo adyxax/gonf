@@ -11,7 +11,7 @@ func init() {
 }
 
 // ----- Public ----------------------------------------------------------------
-func Default(name string, value Value) *VariablePromise {
+func Default(name string, value string) *VariablePromise {
 	if v, ok := variables[name]; ok {
 		if !v.isDefault {
 			slog.Debug("default would overwrite a variable, ignoring", "name", name, "old_value", v.value, "new_value", value)
@@ -22,19 +22,20 @@ func Default(name string, value Value) *VariablePromise {
 	v := &VariablePromise{
 		isDefault: true,
 		name:      name,
-		value:     value,
+		value:     interfaceToTemplateValue(value),
 	}
 	variables[name] = v
 	return v
 }
-func Variable(name string, value Value) *VariablePromise {
+
+func Variable(name string, value string) *VariablePromise {
 	if v, ok := variables[name]; ok && !v.isDefault {
 		slog.Error("variable is being overwritten", "name", name, "old_value", v, "new_value", value)
 	}
 	v := &VariablePromise{
 		isDefault: false,
 		name:      name,
-		value:     value,
+		value:     interfaceToTemplateValue(value),
 	}
 	variables[name] = v
 	return v

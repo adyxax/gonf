@@ -25,12 +25,22 @@ type FilePromise struct {
 	status   Status
 }
 
-func File(filename Value, contents Value) *FilePromise {
+func File(filename any, contents string) *FilePromise {
 	return &FilePromise{
 		chain:    nil,
-		contents: contents,
+		contents: interfaceToValue(contents),
 		err:      nil,
-		filename: filename,
+		filename: interfaceToTemplateValue(filename),
+		status:   PROMISED,
+	}
+}
+
+func Template(filename any, contents any) *FilePromise {
+	return &FilePromise{
+		chain:    nil,
+		contents: interfaceToTemplateValue(contents),
+		err:      nil,
+		filename: interfaceToTemplateValue(filename),
 		status:   PROMISED,
 	}
 }
