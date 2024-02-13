@@ -1,6 +1,9 @@
 package gonf
 
-import "log/slog"
+import (
+	"fmt"
+	"log/slog"
+)
 
 // ----- Globals ---------------------------------------------------------------
 var variables map[string]*VariablePromise
@@ -47,12 +50,20 @@ type VariablePromise struct {
 	value     Value
 }
 
+// We want VariablePromise to satisfy the Value interface
+func (s VariablePromise) Bytes() []byte {
+	return s.value.Bytes()
+}
+func (s VariablePromise) String() string {
+	return s.value.String()
+}
+
 // ----- Internal --------------------------------------------------------------
 func getVariable(name string) string {
 	if v, ok := variables[name]; ok {
 		return v.value.String()
 	} else {
 		slog.Error("undefined variable or default", "name", name)
-		return ""
+		panic(fmt.Sprintf("undefined variable or default %s", name))
 	}
 }

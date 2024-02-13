@@ -1,6 +1,9 @@
 package gonf
 
-import "log/slog"
+import (
+	"fmt"
+	"log/slog"
+)
 
 type Value interface {
 	Bytes() []byte
@@ -14,8 +17,11 @@ func interfaceToValue(v any) Value {
 	if vv, ok := v.([]byte); ok {
 		return &BytesValue{vv}
 	}
-	slog.Error("interfaceToTemplateValue", "value", v, "error", "Not Implemented")
-	return nil
+	if vv, ok := v.(*VariablePromise); ok {
+		return vv
+	}
+	slog.Error("interfaceToValue", "value", v, "error", "Not Implemented")
+	panic(fmt.Sprintf("interfaceToValue cannot take type %T as argument. Value was %#v.", v, v))
 }
 
 func interfaceToTemplateValue(v any) Value {
@@ -25,8 +31,11 @@ func interfaceToTemplateValue(v any) Value {
 	if vv, ok := v.([]byte); ok {
 		return &TemplateValue{data: string(vv)}
 	}
+	if vv, ok := v.(*VariablePromise); ok {
+		return vv
+	}
 	slog.Error("interfaceToTemplateValue", "value", v, "error", "Not Implemented")
-	return nil
+	panic(fmt.Sprintf("interfaceToTemplateValue cannot take type %T as argument. Value was %#v.", v, v))
 }
 
 // ----- BytesValue -----------------------------------------------------------------
