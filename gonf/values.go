@@ -11,11 +11,14 @@ type Value interface {
 }
 
 func interfaceToValue(v any) Value {
-	if vv, ok := v.(string); ok {
-		return &StringValue{vv}
-	}
 	if vv, ok := v.([]byte); ok {
 		return &BytesValue{vv}
+	}
+	if vv, ok := v.(int); ok {
+		return &IntValue{vv}
+	}
+	if vv, ok := v.(string); ok {
+		return &StringValue{vv}
 	}
 	if vv, ok := v.(*VariablePromise); ok {
 		return vv
@@ -25,11 +28,14 @@ func interfaceToValue(v any) Value {
 }
 
 func interfaceToTemplateValue(v any) Value {
-	if vv, ok := v.(string); ok {
-		return &TemplateValue{data: vv}
-	}
 	if vv, ok := v.([]byte); ok {
 		return &TemplateValue{data: string(vv)}
+	}
+	if vv, ok := v.(int); ok {
+		return &IntValue{vv}
+	}
+	if vv, ok := v.(string); ok {
+		return &TemplateValue{data: vv}
 	}
 	if vv, ok := v.(*VariablePromise); ok {
 		return vv
@@ -38,7 +44,7 @@ func interfaceToTemplateValue(v any) Value {
 	panic(fmt.Sprintf("interfaceToTemplateValue cannot take type %T as argument. Value was %#v.", v, v))
 }
 
-// ----- BytesValue -----------------------------------------------------------------
+// ----- BytesValue ------------------------------------------------------------
 type BytesValue struct {
 	value []byte
 }
@@ -46,12 +52,26 @@ type BytesValue struct {
 func (b BytesValue) Bytes() []byte {
 	return b.value
 }
-
 func (b BytesValue) String() string {
 	return string(b.value[:])
 }
 
-// ----- StringValue ----------------------------------------------------------------
+// ----- IntValue --------------------------------------------------------------
+type IntValue struct {
+	value int
+}
+
+func (i IntValue) Bytes() []byte {
+	return []byte(string(i.value))
+}
+func (i IntValue) Int() int {
+	return i.value
+}
+func (i IntValue) String() string {
+	return string(i.value)
+}
+
+// ----- StringValue -----------------------------------------------------------
 type StringValue struct {
 	value string
 }

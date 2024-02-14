@@ -20,25 +20,32 @@ func init() {
 
 // ----- Public ----------------------------------------------------------------
 type FilePromise struct {
-	chain    []Promise
-	contents Value
-	err      error
-	filename Value
-	status   Status
+	chain       []Promise
+	contents    Value
+	err         error
+	filename    Value
+	permissions *Permissions
+	status      Status
 }
 
 func File(filename any) *FilePromise {
 	return &FilePromise{
-		chain:    nil,
-		contents: nil,
-		err:      nil,
-		filename: interfaceToTemplateValue(filename),
-		status:   PROMISED,
+		chain:       nil,
+		contents:    nil,
+		err:         nil,
+		filename:    interfaceToTemplateValue(filename),
+		permissions: nil,
+		status:      PROMISED,
 	}
 }
 
 func (f *FilePromise) Contents(contents any) *FilePromise {
 	f.contents = interfaceToValue(contents)
+	return f
+}
+
+func (f *FilePromise) Permissions(p *Permissions) *FilePromise {
+	f.permissions = p
 	return f
 }
 
@@ -79,16 +86,28 @@ func (f *FilePromise) Resolve() {
 				return
 			}
 			f.status = REPAIRED
-			slog.Info("file", "filename", f.filename, "status", f.status)
-			for _, p := range f.chain {
-				p.Resolve()
-			}
 		}
 	}
-	if f.status == PROMISED {
-		f.status = KEPT
+	if f.permissions != nil {
+		var status Status
+		status, f.err = f.permissions.resolve(filename)
+		if f.status == PROMISED || status == BROKEN {
+			f.status = status
+		}
+		if f.err != nil {
+			slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
+			return
+		}
 	}
-	slog.Debug("file", "filename", f.filename, "status", f.status)
+	if f.status == REPAIRED {
+		slog.Info("file", "filename", f.filename, "status", f.status)
+		for _, p := range f.chain {
+			p.Resolve()
+		}
+	} else {
+		f.status = KEPT
+		slog.Debug("file", "filename", f.filename, "status", f.status)
+	}
 }
 
 // ----- Internal --------------------------------------------------------------
