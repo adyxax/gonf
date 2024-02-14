@@ -3,7 +3,9 @@ package gonf
 import (
 	"bytes"
 	"crypto/sha256"
+	"errors"
 	"io"
+	"io/fs"
 	"log/slog"
 	"os"
 )
@@ -25,26 +27,27 @@ type FilePromise struct {
 	status   Status
 }
 
-func File(filename any, contents string) *FilePromise {
+func File(filename any) *FilePromise {
 	return &FilePromise{
 		chain:    nil,
-		contents: interfaceToValue(contents),
+		contents: nil,
 		err:      nil,
 		filename: interfaceToTemplateValue(filename),
 		status:   PROMISED,
 	}
 }
 
-func Template(filename any, contents any) *FilePromise {
-	return &FilePromise{
-		chain:    nil,
-		contents: interfaceToTemplateValue(contents),
-		err:      nil,
-		filename: interfaceToTemplateValue(filename),
-		status:   PROMISED,
-	}
+func (f *FilePromise) Contents(contents any) *FilePromise {
+	f.contents = interfaceToValue(contents)
+	return f
 }
 
+func (f *FilePromise) Template(contents any) *FilePromise {
+	f.contents = interfaceToTemplateValue(contents)
+	return f
+}
+
+// We want to satisfy the Promise interface
 func (f *FilePromise) IfRepaired(p ...Promise) Promise {
 	f.chain = p
 	return f
@@ -57,28 +60,34 @@ func (f *FilePromise) Promise() Promise {
 
 func (f *FilePromise) Resolve() {
 	filename := f.filename.String()
-	var sumFile []byte
-	sumFile, f.err = sha256sumOfFile(filename)
-	if f.err != nil {
-		f.status = BROKEN
-		return
-	}
-	contents := f.contents.Bytes()
-	sumContents := sha256sum(contents)
-	if !bytes.Equal(sumFile, sumContents) {
-		if f.err = writeFile(filename, contents); f.err != nil {
-			f.status = BROKEN
-			slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
-			return
+	if f.contents != nil {
+		var sumFile []byte
+		sumFile, f.err = sha256sumOfFile(filename)
+		if f.err != nil {
+			if errors.Is(f.err, fs.ErrNotExist) {
+				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
+				f.status = BROKEN
+				return
+			}
 		}
-		f.status = REPAIRED
-		slog.Info("file", "filename", f.filename, "status", f.status)
-		for _, p := range f.chain {
-			p.Resolve()
+		contents := f.contents.Bytes()
+		sumContents := sha256sum(contents)
+		if !bytes.Equal(sumFile, sumContents) {
+			if f.err = writeFile(filename, contents); f.err != nil {
+				f.status = BROKEN
+				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
+				return
+			}
+			f.status = REPAIRED
+			slog.Info("file", "filename", f.filename, "status", f.status)
+			for _, p := range f.chain {
+				p.Resolve()
+			}
 		}
-		return
 	}
-	f.status = KEPT
+	if f.status == PROMISED {
+		f.status = KEPT
+	}
 	slog.Debug("file", "filename", f.filename, "status", f.status)
 }
 
