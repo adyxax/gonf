@@ -31,6 +31,14 @@ func Resolve() (status Status) {
 			packages_list_function()
 			continue
 		}
+		// ----- Services ----------------------------------------------
+		status = resolveServices()
+		switch status {
+		case BROKEN:
+			return BROKEN
+		case REPAIRED:
+			continue
+		}
 		// ----- Commands ----------------------------------------------
 		status = resolveCommands()
 		switch status {
