@@ -14,6 +14,22 @@ func init() {
 }
 
 // ----- Public ----------------------------------------------------------------
+func AppendVariable(name string, values ...string) *VariablePromise {
+	if v, ok := variables[name]; ok {
+		if l, ok := v.value.(*StringsListValue); ok {
+			l.Append(values...)
+		}
+		return v
+	}
+	v := &VariablePromise{
+		isDefault: false,
+		name:      name,
+		value:     &StringsListValue{values},
+	}
+	variables[name] = v
+	return v
+}
+
 func Default(name string, value string) *VariablePromise {
 	if v, ok := variables[name]; ok {
 		if !v.isDefault {

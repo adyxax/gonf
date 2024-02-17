@@ -3,6 +3,7 @@ package gonf
 import (
 	"fmt"
 	"log/slog"
+	"strings"
 )
 
 type Value interface {
@@ -71,6 +72,21 @@ func (i IntValue) String() string {
 	return string(i.value)
 }
 
+// ----- StringsListValue ------------------------------------------------------
+type StringsListValue struct {
+	value []string
+}
+
+func (s *StringsListValue) Append(v ...string) {
+	s.value = append(s.value, v...)
+}
+func (s StringsListValue) Bytes() []byte {
+	return []byte(s.String())
+}
+func (s StringsListValue) String() string {
+	return strings.Join(s.value, "\n")
+}
+
 // ----- StringValue -----------------------------------------------------------
 type StringValue struct {
 	value string
@@ -82,8 +98,6 @@ func (s StringValue) Bytes() []byte {
 func (s StringValue) String() string {
 	return s.value
 }
-
-// TODO lists
 
 // TODO maps
 
