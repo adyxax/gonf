@@ -71,7 +71,7 @@ func (f *FilePromise) Resolve() {
 		var sumFile []byte
 		sumFile, f.err = sha256sumOfFile(filename)
 		if f.err != nil {
-			if errors.Is(f.err, fs.ErrNotExist) {
+			if !errors.Is(f.err, fs.ErrNotExist) {
 				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
 				f.status = BROKEN
 				return
