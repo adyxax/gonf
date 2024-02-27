@@ -1,10 +1,12 @@
 package gonf
 
+import "log/slog"
+
 // ----- Globals ---------------------------------------------------------------
 var packages []*PackagePromise
 
 // packages management functions
-var packages_install_function func([]string) Status
+var packages_install_function func([]string) (Status, []string)
 var packages_list_function func()
 var packages_update_function *CommandPromise
 
@@ -14,7 +16,7 @@ func init() {
 }
 
 // ----- Public ----------------------------------------------------------------
-func SetPackagesConfiguration(install func([]string) Status, list func(), update *CommandPromise) {
+func SetPackagesConfiguration(install func([]string) (Status, []string), list func(), update *CommandPromise) {
 	packages_install_function = install
 	packages_list_function = list
 	packages_update_function = update
@@ -47,8 +49,14 @@ func (p *PackagePromise) Promise() Promise {
 }
 
 func (p *PackagePromise) Resolve() {
-	status := packages_install_function(p.names)
-	if status == REPAIRED {
+	status, affected := packages_install_function(p.names)
+	switch status {
+	case BROKEN:
+		slog.Error("package", "names", p.names, "status", status, "broke", affected)
+	case KEPT:
+		slog.Debug("package", "names", p.names, "status", status)
+	case REPAIRED:
+		slog.Info("package", "names", p.names, "status", status, "repaired", affected)
 		for _, pp := range p.chain {
 			pp.Resolve()
 		}

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"strings"
 
 	"git.adyxax.org/adyxax/gonf/v2/gonf"
 	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/systemd"
@@ -32,21 +33,19 @@ func Promise() {
 	systemd.Promise()
 }
 
-func packages_install(names []string) gonf.Status {
-	allKept := true
-	for _, n := range names {
-		if _, ok := packages[n]; !ok {
-			allKept = false
-		}
-	}
-	if allKept {
-		return gonf.KEPT
+func packages_install(names []string) (gonf.Status, []string) {
+	gonf.FilterSlice(&names, func(n string) bool {
+		_, ok := packages[n]
+		return !ok
+	})
+	if len(names) == 0 {
+		return gonf.KEPT, nil
 	}
 	args := append([]string{"install", "-y", "--no-install-recommends"}, names...)
 	cmd := gonf.CommandWithEnv([]string{"DEBIAN_FRONTEND=noninteractive", "LC_ALL=C"}, "apt-get", args...)
 	cmd.Resolve()
 	packages_list()
-	return cmd.Status
+	return cmd.Status, names
 }
 
 func packages_list() {
