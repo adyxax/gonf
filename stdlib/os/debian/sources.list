@@ -1,0 +1,6 @@
+deb https://deb.debian.org/debian               {{ var "debian-release" }}           main contrib non-free non-free-firmware
+deb https://deb.debian.org/debian               {{ var "debian-release" }}-backports main contrib non-free non-free-firmware
+deb https://deb.debian.org/debian               {{ var "debian-release" }}-updates   main contrib non-free non-free-firmware
+deb https://security.debian.org/debian-security {{ var "debian-release" }}-security  main contrib non-free non-free-firmware
+
+{{ var "debian-extra-sources" }}
