@@ -64,6 +64,9 @@ func packages_list() {
 			slog.Error("dpkg-query", "error", "parsing error: no version after name")
 			os.Exit(1)
 		}
+		if strings.Contains(name, ":") { // some packages are named with the arch like something:amd64
+			name = strings.Split(name, ":")[0] // in this case we want only the name
+		}
 		packages[name] = s.Text()
 	}
 }
