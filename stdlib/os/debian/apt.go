@@ -19,6 +19,9 @@ func init() {
 	packages_list()
 }
 
+//go:embed apt-norecommends
+var apt_norecommends []byte
+
 //go:embed sources.list
 var sources_list []byte
 
@@ -28,6 +31,7 @@ func Promise() {
 	gonf.AppendVariable("debian-extra-sources", "# Extra sources")
 	apt_update := gonf.Command("apt-get", "update", "-qq")
 	gonf.File("/etc/apt/sources.list").Permissions(rootRO).Template(sources_list).Promise().IfRepaired(apt_update)
+	gonf.File("/etc/apt/apt.conf.d/99_norecommends").Permissions(rootRO).Template(apt_norecommends).Promise()
 	gonf.SetPackagesConfiguration(packages_install, packages_list, apt_update)
 	gonf.Service("opensmtpd").State("enabled", "started").Promise()
 	systemd.Promise()
