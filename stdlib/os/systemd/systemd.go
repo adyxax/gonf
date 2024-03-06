@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os/exec"
 
-	"git.adyxax.org/adyxax/gonf/v2/gonf"
+	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
 )
 
 func Promise() {

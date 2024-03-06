@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"git.adyxax.org/adyxax/gonf/v2/gonf"
+	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
 	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/systemd"
 )
 
