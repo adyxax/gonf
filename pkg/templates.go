@@ -3,6 +3,7 @@ package gonf
 import (
 	"bytes"
 	"log/slog"
+	"strconv"
 	"text/template"
 )
 
@@ -38,7 +39,9 @@ func (t *TemplateValue) Bytes() []byte {
 	}
 	return t.contents
 }
-
+func (t TemplateValue) Int() (int, error) {
+	return strconv.Atoi(t.String())
+}
 func (t TemplateValue) String() string {
 	return string(t.Bytes()[:])
 }

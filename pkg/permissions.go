@@ -37,14 +37,9 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 			}
 		}
 	}
-	m, ok := p.mode.(*IntValue)
-	if !ok {
-		if i, err := strconv.Atoi(p.mode.String()); err != nil {
-			return BROKEN, err
-		} else {
-			m = &IntValue{i}
-			p.mode = m
-		}
+	m, err := p.mode.Int()
+	if err != nil {
+		return BROKEN, err
 	}
 	u, ok := p.user.(*IntValue)
 	if !ok {
@@ -63,9 +58,9 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 	if fileInfo, err := os.Lstat(filename); err != nil {
 		return BROKEN, err
 	} else {
-		gv := g.Int()
-		mv := fs.FileMode(m.Int())
-		uv := u.Int()
+		gv, _ := g.Int()
+		mv := fs.FileMode(m)
+		uv, _ := u.Int()
 		if fileInfo.Mode() != mv {
 			if err := os.Chmod(filename, mv); err != nil {
 				return BROKEN, err
@@ -82,8 +77,6 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 		} else {
 			return BROKEN, errors.New("Unsupported operating system")
 		}
-		_ = gv
-		_ = uv
 	}
 	return status, nil
 }

@@ -70,6 +70,9 @@ type VariablePromise struct {
 func (s VariablePromise) Bytes() []byte {
 	return s.value.Bytes()
 }
+func (s VariablePromise) Int() (int, error) {
+	return s.value.Int()
+}
 func (s VariablePromise) String() string {
 	return s.value.String()
 }
