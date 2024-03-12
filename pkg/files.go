@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"os"
+	"path/filepath"
 )
 
 // ----- Globals ---------------------------------------------------------------
@@ -20,27 +21,34 @@ func init() {
 
 // ----- Public ----------------------------------------------------------------
 type FilePromise struct {
-	chain       []Promise
-	contents    Value
-	err         error
-	filename    Value
-	permissions *Permissions
-	status      Status
+	chain          []Promise
+	contents       Value
+	dirPermissions *Permissions
+	err            error
+	filename       Value
+	permissions    *Permissions
+	status         Status
 }
 
 func File(filename any) *FilePromise {
 	return &FilePromise{
-		chain:       nil,
-		contents:    nil,
-		err:         nil,
-		filename:    interfaceToTemplateValue(filename),
-		permissions: nil,
-		status:      PROMISED,
+		chain:          nil,
+		contents:       nil,
+		dirPermissions: nil,
+		err:            nil,
+		filename:       interfaceToTemplateValue(filename),
+		permissions:    nil,
+		status:         PROMISED,
 	}
 }
 
 func (f *FilePromise) Contents(contents any) *FilePromise {
 	f.contents = interfaceToValue(contents)
+	return f
+}
+
+func (f *FilePromise) DirectoriesPermissions(p *Permissions) *FilePromise {
+	f.dirPermissions = p
 	return f
 }
 
@@ -67,6 +75,11 @@ func (f *FilePromise) Promise() Promise {
 
 func (f *FilePromise) Resolve() {
 	filename := f.filename.String()
+	if f.dirPermissions != nil {
+		if f.status, f.err = makeDirectoriesHierarchy(filepath.Dir(filename), f.dirPermissions); f.err != nil {
+			return
+		}
+	}
 	if f.contents != nil {
 		var sumFile []byte
 		sumFile, f.err = sha256sumOfFile(filename)

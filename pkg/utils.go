@@ -2,6 +2,10 @@ package gonf
 
 import (
 	"crypto/sha256"
+	"errors"
+	"io/fs"
+	"os"
+	"path/filepath"
 )
 
 var builtinTemplateFunctions = map[string]any{
@@ -18,6 +22,28 @@ func FilterSlice[T any](slice *[]T, predicate func(T) bool) {
 		} // otherwise the element will get overwritten
 	}
 	*slice = (*slice)[:i] // or truncated out of the slice
+}
+
+// We cannot just use os.MakedirAll because we need to set the user:group on every intermediate directories created
+func makeDirectoriesHierarchy(dir string, perms *Permissions) (Status, error) {
+	if _, err := os.Lstat(dir); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			if status, err := makeDirectoriesHierarchy(filepath.Dir(dir), perms); err != nil {
+				return status, err
+			}
+			m, err := perms.mode.Int()
+			if err != nil {
+				return BROKEN, err
+			}
+			os.Mkdir(dir, fs.FileMode(m))
+			perms.resolve(dir)
+			return REPAIRED, nil
+		} else {
+			return BROKEN, err
+		}
+	} else {
+		return KEPT, nil
+	}
 }
 
 func sha256sum(contents []byte) []byte {
