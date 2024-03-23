@@ -123,6 +123,10 @@ func (f *FilePromise) Resolve() {
 	}
 }
 
+func (f FilePromise) Status() Status {
+	return f.status
+}
+
 // ----- Internal --------------------------------------------------------------
 func resolveFiles() (status Status) {
 	status = KEPT

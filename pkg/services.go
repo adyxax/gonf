@@ -78,6 +78,10 @@ func (s *ServicePromise) Resolve() {
 	}
 }
 
+func (s ServicePromise) Status() Status {
+	return s.status
+}
+
 // ----- Internal --------------------------------------------------------------
 func resolveServices() (status Status) {
 	status = KEPT

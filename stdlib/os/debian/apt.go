@@ -58,7 +58,7 @@ func packages_install(names []string) (gonf.Status, []string) {
 	cmd := gonf.CommandWithEnv([]string{"DEBIAN_FRONTEND=noninteractive", "LC_ALL=C"}, "apt-get", args...)
 	cmd.Resolve()
 	packages_list()
-	return cmd.Status, names
+	return cmd.Status(), names
 }
 
 func packages_list() {

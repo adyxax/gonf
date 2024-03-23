@@ -4,6 +4,7 @@ type Promise interface {
 	IfRepaired(...Promise) Promise
 	Promise() Promise
 	Resolve()
+	Status() Status
 }
 
 //type Operation int

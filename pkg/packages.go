@@ -63,6 +63,10 @@ func (p *PackagePromise) Resolve() {
 	}
 }
 
+func (p PackagePromise) Status() Status {
+	return p.status
+}
+
 // ----- Internal --------------------------------------------------------------
 func resolvePackages() (status Status) {
 	status = KEPT

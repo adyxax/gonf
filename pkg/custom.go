@@ -6,16 +6,11 @@ func init() {
 	customPromises = make([]*CustomPromise, 0)
 }
 
-type CustomPromiseInterface interface {
-	Promise
-	Status() Status
-}
-
 type CustomPromise struct {
-	promise CustomPromiseInterface
+	promise Promise
 }
 
-func MakeCustomPromise(p CustomPromiseInterface) *CustomPromise {
+func MakeCustomPromise(p Promise) *CustomPromise {
 	return &CustomPromise{
 		promise: p,
 	}

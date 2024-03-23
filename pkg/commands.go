@@ -26,7 +26,7 @@ func CommandWithEnv(env []string, cmd string, args ...string) *CommandPromise {
 		cmd:    cmd,
 		env:    env,
 		err:    nil,
-		Status: PROMISED,
+		status: PROMISED,
 	}
 }
 
@@ -36,7 +36,7 @@ type CommandPromise struct {
 	cmd    string
 	env    []string
 	err    error
-	Status Status
+	status Status
 	Stdout bytes.Buffer
 	Stderr bytes.Buffer
 }
@@ -60,16 +60,16 @@ func (c *CommandPromise) Resolve() {
 	cmd.Stderr = &c.Stderr
 
 	if c.err = cmd.Run(); c.err != nil {
-		c.Status = BROKEN
+		c.status = BROKEN
 		slog.Error("command", "args", c.args, "cmd", c.cmd, "env", c.env, "err", c.err, "stdout", c.Stdout.String(), "stderr", c.Stderr.String(), "status", c.Status)
 		return
 	}
 	if c.Stdout.Len() == 0 && c.Stderr.Len() > 0 {
-		c.Status = BROKEN
+		c.status = BROKEN
 		slog.Error("command", "args", c.args, "cmd", c.cmd, "env", c.env, "stdout", c.Stdout.String(), "stderr", c.Stderr.String(), "status", c.Status)
 		return
 	}
-	c.Status = REPAIRED
+	c.status = REPAIRED
 	slog.Info("command", "args", c.args, "cmd", c.cmd, "env", c.env, "stderr", c.Stderr.String(), "status", c.Status)
 	// TODO add a notion of repaired?
 	for _, p := range c.chain {
@@ -77,13 +77,17 @@ func (c *CommandPromise) Resolve() {
 	}
 }
 
+func (c CommandPromise) Status() Status {
+	return c.status
+}
+
 // ----- Internal --------------------------------------------------------------
 func resolveCommands() (status Status) {
 	status = KEPT
 	for _, c := range commands {
-		if c.Status == PROMISED {
+		if c.status == PROMISED {
 			c.Resolve()
-			switch c.Status {
+			switch c.status {
 			case BROKEN:
 				return BROKEN
 			case REPAIRED:
