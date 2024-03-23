@@ -47,6 +47,14 @@ func Resolve() (status Status) {
 		case REPAIRED:
 			continue
 		}
+		// ----- CustomPromises ----------------------------------------
+		status = resolveCustomPromises()
+		switch status {
+		case BROKEN:
+			return BROKEN
+		case REPAIRED:
+			continue
+		}
 		return
 	}
 }
