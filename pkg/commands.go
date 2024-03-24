@@ -42,7 +42,7 @@ type CommandPromise struct {
 }
 
 func (c *CommandPromise) IfRepaired(p ...Promise) Promise {
-	c.chain = p
+	c.chain = append(c.chain, p...)
 	return c
 }
 

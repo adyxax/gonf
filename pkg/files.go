@@ -64,7 +64,7 @@ func (f *FilePromise) Template(contents any) *FilePromise {
 
 // We want to satisfy the Promise interface
 func (f *FilePromise) IfRepaired(p ...Promise) Promise {
-	f.chain = p
+	f.chain = append(f.chain, p...)
 	return f
 }
 

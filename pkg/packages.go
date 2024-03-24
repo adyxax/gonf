@@ -39,7 +39,7 @@ type PackagePromise struct {
 }
 
 func (p *PackagePromise) IfRepaired(ps ...Promise) Promise {
-	p.chain = ps
+	p.chain = append(p.chain, ps...)
 	return p
 }
 

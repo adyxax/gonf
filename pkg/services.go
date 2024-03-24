@@ -41,8 +41,8 @@ type ServicePromise struct {
 	status Status
 }
 
-func (s *ServicePromise) IfRepaired(ps ...Promise) Promise {
-	s.chain = ps
+func (s *ServicePromise) IfRepaired(p ...Promise) Promise {
+	s.chain = append(s.chain, p...)
 	return s
 }
 
