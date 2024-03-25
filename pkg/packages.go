@@ -7,7 +7,6 @@ var packages []*PackagePromise
 
 // packages management functions
 var packages_install_function func([]string) (Status, []string)
-var packages_list_function func()
 var packages_update_function *CommandPromise
 
 // ----- Init ------------------------------------------------------------------
@@ -16,9 +15,8 @@ func init() {
 }
 
 // ----- Public ----------------------------------------------------------------
-func SetPackagesConfiguration(install func([]string) (Status, []string), list func(), update *CommandPromise) {
+func SetPackagesConfiguration(install func([]string) (Status, []string), update *CommandPromise) {
 	packages_install_function = install
-	packages_list_function = list
 	packages_update_function = update
 }
 

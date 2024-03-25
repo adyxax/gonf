@@ -3,47 +3,18 @@ package debian
 import (
 	"bufio"
 	"bytes"
-	_ "embed"
 	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 
 	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
-	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/systemd"
 )
 
 var packages map[string]string
 
 func init() {
 	packages_list()
-}
-
-//go:embed apt-norecommends
-var apt_norecommends []byte
-
-//go:embed sources.list
-var sources_list []byte
-
-func Promise() {
-	rootDir := gonf.ModeUserGroup(0755, "root", "root")
-	rootRO := gonf.ModeUserGroup(0444, "root", "root")
-	gonf.Default("debian-release", "stable")
-	gonf.AppendVariable("debian-extra-sources", "# Extra sources")
-	apt_update := gonf.Command("apt-get", "update", "-qq")
-	gonf.File("/etc/apt/sources.list").
-		Permissions(rootRO).
-		Template(sources_list).
-		Promise().
-		IfRepaired(apt_update)
-	gonf.File("/etc/apt/apt.conf.d/99_norecommends").
-		DirectoriesPermissions(rootDir).
-		Permissions(rootRO).
-		Template(apt_norecommends).
-		Promise()
-	gonf.SetPackagesConfiguration(packages_install, packages_list, apt_update)
-	gonf.Service("opensmtpd").State("enabled", "started").Promise()
-	systemd.Promise()
 }
 
 func packages_install(names []string) (gonf.Status, []string) {

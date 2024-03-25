@@ -28,7 +28,6 @@ func Resolve() (status Status) {
 		case BROKEN:
 			return BROKEN
 		case REPAIRED:
-			packages_list_function()
 			continue
 		}
 		// ----- Services ----------------------------------------------
