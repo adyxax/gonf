@@ -14,6 +14,14 @@ func EnableDebugLogs() {
 
 func Resolve() (status Status) {
 	for {
+		// ----- Users -------------------------------------------------
+		status = resolveUsers()
+		switch status {
+		case BROKEN:
+			return BROKEN
+		case REPAIRED:
+			continue
+		}
 		// ----- Files -------------------------------------------------
 		status = resolveFiles()
 		switch status {
