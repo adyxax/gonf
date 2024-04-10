@@ -12,13 +12,14 @@ import (
 
 var (
 	batchMode bool
+	configDir string
 	helpMode  bool
 )
 
 func main() {
 	if err := run(context.Background(),
 		os.Args,
-		//os.Getenv,
+		os.Getenv,
 		//os.Getwd,
 		//os.Stdin,
 		os.Stdout,
@@ -31,7 +32,7 @@ func main() {
 
 func run(ctx context.Context,
 	args []string,
-	//getenv func(string) string,
+	getenv func(string) string,
 	//getwd func() (string, error),
 	//stdin io.Reader,
 	stdout, stderr io.Writer,
@@ -46,6 +47,7 @@ where COMMAND is one of:
 where FLAG can be one or more of`, flag.ContinueOnError)
 	f.BoolVar(&batchMode, "batch", false, "skips all questions and confirmations, using the default (safe) choices each time")
 	f.BoolVar(&helpMode, "help", false, "show contextual help")
+	f.StringVar(&configDir, "config", "", "(REQUIRED for most commands) path to a gonf configurations repository (overrides the GONF_CONFIG environment variable)")
 	f.SetOutput(stderr)
 	f.Parse(args[1:])
 
@@ -61,8 +63,18 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	case "version":
 		cmdVersion()
 	default:
-		f.Usage()
-		return fmt.Errorf("Invalid command: %s", cmd)
+		if configDir == "" {
+			configDir = getenv("GONF_CONFIG")
+			if configDir == "" {
+				f.Usage()
+				return errors.New("The GONF_CONFIG environment variable is unset and the -config FLAG is missing. Please use one or the other.")
+			}
+		}
+		switch cmd {
+		default:
+			f.Usage()
+			return fmt.Errorf("Invalid command: %s", cmd)
+		}
 	}
 	return nil
 }
