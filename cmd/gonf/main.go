@@ -56,6 +56,7 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 		return errors.New("No command given")
 	}
 	cmd := f.Arg(0)
+	argsTail := f.Args()[1:]
 	switch cmd {
 	case "help":
 		f.SetOutput(stdout)
@@ -71,6 +72,8 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 			}
 		}
 		switch cmd {
+		case "build":
+			return cmdBuild(ctx, f, argsTail, getenv, stdout, stderr)
 		default:
 			f.Usage()
 			return fmt.Errorf("Invalid command: %s", cmd)
