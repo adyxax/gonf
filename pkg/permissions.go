@@ -75,7 +75,7 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 				status = REPAIRED
 			}
 		} else {
-			return BROKEN, errors.New("Unsupported operating system")
+			return BROKEN, errors.New("unsupported operating system")
 		}
 	}
 	return status, nil

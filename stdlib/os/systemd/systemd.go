@@ -66,5 +66,4 @@ func systemd_service(name, state string) (gonf.Status, error) {
 	default:
 		return gonf.BROKEN, errors.New("unsupported systemctl operation " + state)
 	}
-	return gonf.KEPT, nil
 }

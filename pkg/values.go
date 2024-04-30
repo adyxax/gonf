@@ -68,13 +68,13 @@ type IntValue struct {
 }
 
 func (i IntValue) Bytes() []byte {
-	return []byte(string(i.value))
+	return []byte(fmt.Sprint(i.value))
 }
 func (i IntValue) Int() (int, error) {
 	return i.value, nil
 }
 func (i IntValue) String() string {
-	return string(i.value)
+	return fmt.Sprint(i.value)
 }
 
 // ----- StringsListValue ------------------------------------------------------

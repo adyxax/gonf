@@ -31,7 +31,7 @@ func (c *CustomPromise) Resolve() {
 }
 
 func (c CustomPromise) Status() Status {
-	return c.Status()
+	return c.promise.Status()
 }
 
 func resolveCustomPromises() (status Status) {
