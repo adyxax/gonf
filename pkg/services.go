@@ -2,18 +2,14 @@ package gonf
 
 import "log/slog"
 
-// ----- Globals ---------------------------------------------------------------
 var services []*ServicePromise
 
-// service management function
 var serviceFunction func(string, string) (Status, error)
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	services = make([]*ServicePromise, 0)
 }
 
-// ----- Public ----------------------------------------------------------------
 func SetServiceFunction(f func(string, string) (Status, error)) {
 	serviceFunction = f
 }
@@ -82,7 +78,6 @@ func (s ServicePromise) Status() Status {
 	return s.status
 }
 
-// ----- Internal --------------------------------------------------------------
 func resolveServices() (status Status) {
 	status = KEPT
 	for _, c := range services {

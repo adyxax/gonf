@@ -2,21 +2,22 @@ package debian
 
 import (
 	_ "embed"
-	"git.adyxax.org/adyxax/gonf/v2/pkg"
+
+	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
 	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/linux"
 	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/systemd"
 )
 
 //go:embed apt-norecommends
-var apt_norecommends []byte
+var aptNoRecommends []byte
 
 //go:embed sources.list
-var sources_list []byte
+var sourcesList []byte
 
 func Promise() {
 	// ----- gonf --------------------------------------------------------------
-	apt_update := gonf.Command("apt-get", "update", "-qq")
-	gonf.SetPackagesConfiguration(packages_install, apt_update)
+	aptUpdate := gonf.Command("apt-get", "update", "-qq")
+	gonf.SetPackagesConfiguration(packagesInstall, aptUpdate)
 	gonf.SetUsersConfiguration(linux.Useradd)
 	// ----- systemd -----------------------------------------------------------
 	systemd.Promise()
@@ -27,12 +28,12 @@ func Promise() {
 	gonf.AppendVariable("debian-extra-sources", "# Extra sources")
 	gonf.File("/etc/apt/sources.list").
 		Permissions(rootRO).
-		Template(sources_list).
+		Template(sourcesList).
 		Promise().
-		IfRepaired(apt_update)
+		IfRepaired(aptUpdate)
 	gonf.File("/etc/apt/apt.conf.d/99_norecommends").
 		DirectoriesPermissions(rootDir).
 		Permissions(rootRO).
-		Contents(apt_norecommends).
+		Contents(aptNoRecommends).
 		Promise()
 }

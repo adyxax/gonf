@@ -8,7 +8,7 @@ import (
 )
 
 func Promise() {
-	gonf.SetServiceFunction(systemd_service)
+	gonf.SetServiceFunction(systemdService)
 }
 
 func isEnabled(name string) bool {
@@ -33,7 +33,7 @@ func systemctlShow(name, field string) string {
 	return string(out[:len(out)-1]) // remove trailing '\n' and convert to string
 }
 
-func systemd_service(name, state string) (gonf.Status, error) {
+func systemdService(name, state string) (gonf.Status, error) {
 	switch state {
 	case "disabled":
 		if isEnabled(name) {

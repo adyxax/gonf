@@ -29,10 +29,10 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 		if group, err := user.LookupGroup(p.group.String()); err != nil {
 			return BROKEN, err
 		} else {
-			if groupId, err := strconv.Atoi(group.Gid); err != nil {
+			if groupID, err := strconv.Atoi(group.Gid); err != nil {
 				return BROKEN, err
 			} else {
-				g = &IntValue{groupId}
+				g = &IntValue{groupID}
 				p.group = g
 			}
 		}
@@ -46,10 +46,10 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 		if user, err := user.Lookup(p.user.String()); err != nil {
 			return BROKEN, err
 		} else {
-			if userId, err := strconv.Atoi(user.Uid); err != nil {
+			if userID, err := strconv.Atoi(user.Uid); err != nil {
 				return BROKEN, err
 			} else {
-				u = &IntValue{userId}
+				u = &IntValue{userID}
 				p.group = u
 			}
 		}

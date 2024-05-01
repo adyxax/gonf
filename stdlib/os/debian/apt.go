@@ -14,10 +14,10 @@ import (
 var packages map[string]string
 
 func init() {
-	packages_list()
+	packagesList()
 }
 
-func packages_install(names []string) (gonf.Status, []string) {
+func packagesInstall(names []string) (gonf.Status, []string) {
 	gonf.FilterSlice(&names, func(n string) bool {
 		_, ok := packages[n]
 		return !ok
@@ -28,11 +28,11 @@ func packages_install(names []string) (gonf.Status, []string) {
 	args := append([]string{"install", "-y", "--no-install-recommends"}, names...)
 	cmd := gonf.CommandWithEnv([]string{"DEBIAN_FRONTEND=noninteractive", "LC_ALL=C"}, "apt-get", args...)
 	cmd.Resolve()
-	packages_list()
+	packagesList()
 	return cmd.Status(), names
 }
 
-func packages_list() {
+func packagesList() {
 	packages = make(map[string]string)
 	ecmd := exec.Command("dpkg-query", "-W")
 	out, err := ecmd.CombinedOutput()

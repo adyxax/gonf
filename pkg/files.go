@@ -11,15 +11,12 @@ import (
 	"path/filepath"
 )
 
-// ----- Globals ---------------------------------------------------------------
 var files []*FilePromise
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	files = make([]*FilePromise, 0)
 }
 
-// ----- Public ----------------------------------------------------------------
 type FilePromise struct {
 	chain          []Promise
 	contents       Value
@@ -62,7 +59,6 @@ func (f *FilePromise) Template(contents any) *FilePromise {
 	return f
 }
 
-// We want to satisfy the Promise interface
 func (f *FilePromise) IfRepaired(p ...Promise) Promise {
 	f.chain = append(f.chain, p...)
 	return f
@@ -127,7 +123,6 @@ func (f FilePromise) Status() Status {
 	return f.status
 }
 
-// ----- Internal --------------------------------------------------------------
 func resolveFiles() (status Status) {
 	status = KEPT
 	for _, f := range files {
@@ -144,12 +139,16 @@ func resolveFiles() (status Status) {
 	return
 }
 
-func sha256sumOfFile(filename string) ([]byte, error) {
+func sha256sumOfFile(filename string) (hash []byte, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() {
+		if e := f.Close(); err == nil {
+			err = e
+		}
+	}()
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return nil, err
@@ -157,12 +156,16 @@ func sha256sumOfFile(filename string) ([]byte, error) {
 	return h.Sum(nil), nil
 }
 
-func writeFile(filename string, contents []byte) error {
+func writeFile(filename string, contents []byte) (err error) {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() {
+		if e := f.Close(); err == nil {
+			err = e
+		}
+	}()
 	_, err = f.Write(contents)
 	return err
 }

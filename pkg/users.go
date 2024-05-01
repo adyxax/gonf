@@ -4,20 +4,16 @@ import (
 	"log/slog"
 )
 
-// ----- Globals ---------------------------------------------------------------
 var users []*UserPromise
 
-// users management functions
-var user_add_function func(data UserData) (Status, error)
+var userAddFunction func(data UserData) (Status, error)
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	users = make([]*UserPromise, 0)
 }
 
-// ----- Public ----------------------------------------------------------------
 func SetUsersConfiguration(useradd func(data UserData) (Status, error)) {
-	user_add_function = useradd
+	userAddFunction = useradd
 }
 
 func User(data UserData) *UserPromise {
@@ -57,7 +53,7 @@ func (u *UserPromise) Promise() Promise {
 
 func (u *UserPromise) Resolve() {
 	var err error
-	u.status, err = user_add_function(u.data)
+	u.status, err = userAddFunction(u.data)
 	switch u.status {
 	case BROKEN:
 		slog.Error("user", "name", u.data.Name, "status", u.status, "error", err)
@@ -77,7 +73,6 @@ func (u UserPromise) Status() Status {
 	return u.status
 }
 
-// ----- Internal --------------------------------------------------------------
 func resolveUsers() (status Status) {
 	status = KEPT
 	for _, c := range users {

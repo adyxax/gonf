@@ -19,7 +19,7 @@ func cmdBuild(ctx context.Context,
 where FLAG can be one or more of`, flag.ContinueOnError)
 	hostFlag := addHostFlag(f)
 	f.SetOutput(stderr)
-	f.Parse(args)
+	_ = f.Parse(args)
 	if helpMode {
 		f.SetOutput(stdout)
 		f.Usage()
@@ -32,17 +32,23 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	return runBuild(ctx, stderr, hostDir)
 }
 
-func runBuild(ctx context.Context, stderr io.Writer, hostDir string) error {
+func runBuild(ctx context.Context, stderr io.Writer, hostDir string) (err error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	defer os.Chdir(wd)
-	os.Chdir(hostDir)
+	defer func() {
+		if e := os.Chdir(wd); err == nil {
+			err = e
+		}
+	}()
+	if err = os.Chdir(hostDir); err != nil {
+		return err
+	}
 	cmd := exec.CommandContext(ctx, "go", "build", "-ldflags", "-s -w -extldflags \"-static\"", hostDir)
 	cmd.Env = append(cmd.Environ(), "CGO_ENABLED=0")
 	if out, err := cmd.CombinedOutput(); err != nil {
-		fmt.Fprint(stderr, string(out))
+		_, _ = fmt.Fprint(stderr, string(out))
 		return err
 	}
 	return nil

@@ -49,11 +49,13 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	f.BoolVar(&helpMode, "help", false, "show contextual help")
 	f.StringVar(&configDir, "config", "", "(REQUIRED for most commands) path to a gonf configurations repository (overrides the GONF_CONFIG environment variable)")
 	f.SetOutput(stderr)
-	f.Parse(args[1:])
+	if err := f.Parse(args[1:]); err != nil {
+		return err
+	}
 
 	if f.NArg() < 1 {
 		f.Usage()
-		return errors.New("No command given")
+		return errors.New("no command given")
 	}
 	cmd := f.Arg(0)
 	argsTail := f.Args()[1:]
@@ -68,7 +70,7 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 			configDir = getenv("GONF_CONFIG")
 			if configDir == "" {
 				f.Usage()
-				return errors.New("The GONF_CONFIG environment variable is unset and the -config FLAG is missing. Please use one or the other.")
+				return errors.New("the GONF_CONFIG environment variable is unset and the -config FLAG is missing. Please use one or the other")
 			}
 		}
 		switch cmd {
@@ -76,7 +78,7 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 			return cmdBuild(ctx, f, argsTail, getenv, stdout, stderr)
 		default:
 			f.Usage()
-			return fmt.Errorf("Invalid command: %s", cmd)
+			return fmt.Errorf("invalid command: %s", cmd)
 		}
 	}
 	return nil

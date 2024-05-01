@@ -7,17 +7,14 @@ import (
 	"text/template"
 )
 
-// ----- Globals ---------------------------------------------------------------
 var templates *template.Template
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	templates = template.New("")
 	templates.Option("missingkey=error")
 	templates.Funcs(builtinTemplateFunctions)
 }
 
-// ----- Public ----------------------------------------------------------------
 type TemplateValue struct {
 	contents []byte
 	data     string

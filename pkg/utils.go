@@ -28,15 +28,19 @@ func FilterSlice[T any](slice *[]T, predicate func(T) bool) {
 func makeDirectoriesHierarchy(dir string, perms *Permissions) (Status, error) {
 	if _, err := os.Lstat(dir); err != nil {
 		if errors.Is(err, fs.ErrNotExist) {
-			if status, err := makeDirectoriesHierarchy(filepath.Dir(dir), perms); err != nil {
-				return status, err
-			}
-			m, err := perms.mode.Int()
-			if err != nil {
+			if _, err = makeDirectoriesHierarchy(filepath.Dir(dir), perms); err != nil {
 				return BROKEN, err
 			}
-			os.Mkdir(dir, fs.FileMode(m))
-			perms.resolve(dir)
+			var m int
+			if m, err = perms.mode.Int(); err != nil {
+				return BROKEN, err
+			}
+			if err = os.Mkdir(dir, fs.FileMode(m)); err != nil {
+				return BROKEN, err
+			}
+			if _, err = perms.resolve(dir); err != nil {
+				return BROKEN, err
+			}
 			return REPAIRED, nil
 		} else {
 			return BROKEN, err

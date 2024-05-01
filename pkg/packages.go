@@ -2,20 +2,16 @@ package gonf
 
 import "log/slog"
 
-// ----- Globals ---------------------------------------------------------------
 var packages []*PackagePromise
 
-// packages management functions
-var packages_install_function func([]string) (Status, []string)
+var packagesInstallFunction func([]string) (Status, []string)
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	packages = make([]*PackagePromise, 0)
 }
 
-// ----- Public ----------------------------------------------------------------
 func SetPackagesConfiguration(install func([]string) (Status, []string), update *CommandPromise) {
-	packages_install_function = install
+	packagesInstallFunction = install
 }
 
 func Package(names ...string) *PackagePromise {
@@ -45,7 +41,7 @@ func (p *PackagePromise) Promise() Promise {
 }
 
 func (p *PackagePromise) Resolve() {
-	status, affected := packages_install_function(p.names)
+	status, affected := packagesInstallFunction(p.names)
 	switch status {
 	case BROKEN:
 		slog.Error("package", "names", p.names, "status", status, "broke", affected)
@@ -63,7 +59,6 @@ func (p PackagePromise) Status() Status {
 	return p.status
 }
 
-// ----- Internal --------------------------------------------------------------
 func resolvePackages() (status Status) {
 	status = KEPT
 	for _, c := range packages {

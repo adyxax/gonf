@@ -5,15 +5,12 @@ import (
 	"log/slog"
 )
 
-// ----- Globals ---------------------------------------------------------------
 var variables map[string]*VariablePromise
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	variables = make(map[string]*VariablePromise)
 }
 
-// ----- Public ----------------------------------------------------------------
 func AppendVariable(name string, values ...string) *VariablePromise {
 	if v, ok := variables[name]; ok {
 		if l, ok := v.value.(*StringsListValue); ok {
@@ -66,7 +63,6 @@ type VariablePromise struct {
 	value     Value
 }
 
-// We want VariablePromise to satisfy the Value interface
 func (s VariablePromise) Bytes() []byte {
 	return s.value.Bytes()
 }
@@ -77,7 +73,6 @@ func (s VariablePromise) String() string {
 	return s.value.String()
 }
 
-// ----- Internal --------------------------------------------------------------
 func getVariable(name string) string {
 	if v, ok := variables[name]; ok {
 		return v.value.String()

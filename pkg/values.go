@@ -47,7 +47,6 @@ func interfaceToTemplateValue(v any) Value {
 	panic(fmt.Sprintf("interfaceToTemplateValue cannot take type %T as argument. Value was %#v.", v, v))
 }
 
-// ----- BytesValue ------------------------------------------------------------
 type BytesValue struct {
 	value []byte
 }
@@ -62,7 +61,6 @@ func (b BytesValue) String() string {
 	return string(b.value[:])
 }
 
-// ----- IntValue --------------------------------------------------------------
 type IntValue struct {
 	value int
 }
@@ -77,7 +75,6 @@ func (i IntValue) String() string {
 	return fmt.Sprint(i.value)
 }
 
-// ----- StringsListValue ------------------------------------------------------
 type StringsListValue struct {
 	value []string
 }
@@ -95,7 +92,6 @@ func (s StringsListValue) String() string {
 	return strings.Join(s.value, "\n")
 }
 
-// ----- StringValue -----------------------------------------------------------
 type StringValue struct {
 	value string
 }

@@ -6,15 +6,12 @@ import (
 	"os/exec"
 )
 
-// ----- Globals ---------------------------------------------------------------
 var commands []*CommandPromise
 
-// ----- Init ------------------------------------------------------------------
 func init() {
 	commands = make([]*CommandPromise, 0)
 }
 
-// ----- Public ----------------------------------------------------------------
 func Command(cmd string, args ...string) *CommandPromise {
 	return CommandWithEnv([]string{}, cmd, args...)
 }
@@ -81,7 +78,6 @@ func (c CommandPromise) Status() Status {
 	return c.status
 }
 
-// ----- Internal --------------------------------------------------------------
 func resolveCommands() (status Status) {
 	status = KEPT
 	for _, c := range commands {
