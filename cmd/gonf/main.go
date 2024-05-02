@@ -76,6 +76,8 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 		switch cmd {
 		case "build":
 			return cmdBuild(ctx, f, argsTail, getenv, stdout, stderr)
+		case "deploy":
+			return cmdDeploy(ctx, f, argsTail, getenv, stdout, stderr)
 		default:
 			f.Usage()
 			return fmt.Errorf("invalid command: %s", cmd)
