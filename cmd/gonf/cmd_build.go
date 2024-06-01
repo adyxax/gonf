@@ -19,12 +19,12 @@ func cmdBuild(ctx context.Context,
 where FLAG can be one or more of`, flag.ContinueOnError)
 	hostFlag := addHostFlag(f)
 	f.SetOutput(stderr)
-	_ = f.Parse(args)
+	f.Parse(args)
 	if helpMode {
 		f.SetOutput(stdout)
 		f.Usage()
 	}
-	hostDir, err := hostFlagToHostDir(f, hostFlag)
+	hostDir, err := hostFlagToHostDir(hostFlag)
 	if err != nil {
 		f.Usage()
 		return err
@@ -32,16 +32,12 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	return runBuild(ctx, stderr, hostDir)
 }
 
-func runBuild(ctx context.Context, stderr io.Writer, hostDir string) (err error) {
+func runBuild(ctx context.Context, stderr io.Writer, hostDir string) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if e := os.Chdir(wd); err == nil {
-			err = e
-		}
-	}()
+	defer os.Chdir(wd)
 	if err = os.Chdir(hostDir); err != nil {
 		return err
 	}

@@ -18,17 +18,16 @@ func cmdDeploy(ctx context.Context,
 where FLAG can be one or more of`, flag.ContinueOnError)
 	hostFlag := addHostFlag(f)
 	f.SetOutput(stderr)
-	_ = f.Parse(args)
+	f.Parse(args)
 	if helpMode {
 		f.SetOutput(stdout)
 		f.Usage()
 	}
-	hostDir, err := hostFlagToHostDir(f, hostFlag)
+	hostDir, err := hostFlagToHostDir(hostFlag)
 	if err != nil {
 		f.Usage()
 		return err
 	}
-	_ = hostDir
 	return runDeploy(ctx, getenv, stdout, stderr, *hostFlag, hostDir)
 }
 

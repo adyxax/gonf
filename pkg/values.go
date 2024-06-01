@@ -14,20 +14,19 @@ type Value interface {
 }
 
 func interfaceToValue(v any) Value {
-	if vv, ok := v.([]byte); ok {
+	switch vv := v.(type) {
+	case []byte:
 		return &BytesValue{vv}
-	}
-	if vv, ok := v.(int); ok {
+	case int:
 		return &IntValue{vv}
-	}
-	if vv, ok := v.(string); ok {
+	case string:
 		return &StringValue{vv}
-	}
-	if vv, ok := v.(*VariablePromise); ok {
+	case *VariablePromise:
 		return vv
+	default:
+		slog.Error("interfaceToValue", "value", v, "error", "Not Implemented")
+		panic(fmt.Sprintf("interfaceToValue cannot take type %T as argument. Value was %#v.", v, v))
 	}
-	slog.Error("interfaceToValue", "value", v, "error", "Not Implemented")
-	panic(fmt.Sprintf("interfaceToValue cannot take type %T as argument. Value was %#v.", v, v))
 }
 
 func interfaceToTemplateValue(v any) Value {

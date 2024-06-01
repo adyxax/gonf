@@ -29,13 +29,13 @@ func newSSHClient(context context.Context,
 
 	socket := getenv("SSH_AUTH_SOCK")
 	if sshc.agentConn, err = net.Dial("unix", socket); err != nil {
-		return nil, fmt.Errorf("failed to open SSH_AUTH_SOCK: %+v", err)
+		return nil, fmt.Errorf("failed to open SSH_AUTH_SOCK: %w", err)
 	}
 	agentClient := agent.NewClient(sshc.agentConn)
 
 	hostKeyCallback, err := knownhosts.New(filepath.Join(getenv("HOME"), ".ssh/known_hosts"))
 	if err != nil {
-		return nil, fmt.Errorf("could not create hostkeycallback function: %+v", err)
+		return nil, fmt.Errorf("failed to create hostkeycallback function: %w", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -47,7 +47,7 @@ func newSSHClient(context context.Context,
 	}
 	sshc.client, err = ssh.Dial("tcp", destination, config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to dial: %+v", err)
+		return nil, fmt.Errorf("failed to dial: %w", err)
 	}
 	return &sshc, nil
 }
@@ -62,38 +62,31 @@ func (sshc *sshClient) Close() error {
 	return nil
 }
 
-func (sshc *sshClient) SendFile(ctx context.Context,
+func (sshc *sshClient) SendFile(
+	ctx context.Context,
 	stdout, stderr io.Writer,
 	filename string,
-) (err error) {
+) error {
 	session, err := sshc.client.NewSession()
 	if err != nil {
-		return fmt.Errorf("sshClient failed to create session: %+v", err)
+		return fmt.Errorf("failed to create ssh client session: %w", err)
 	}
-	defer func() {
-		if e := session.Close(); err == nil && e != io.EOF {
-			err = e
-		}
-	}()
+	defer session.Close()
 
 	file, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("sshClient failed to open file: %+v", err)
+		return fmt.Errorf("failed to open file: %w", err)
 	}
-	defer func() {
-		if e := file.Close(); err == nil {
-			err = e
-		}
-	}()
+	defer file.Close()
 
 	fi, err := file.Stat()
 	if err != nil {
-		return fmt.Errorf("sshClient failed to stat file: %+v", err)
+		return fmt.Errorf("failed to stat file: %w", err)
 	}
 
 	w, err := session.StdinPipe()
 	if err != nil {
-		return fmt.Errorf("sshClient failed to open session stdin pipe: %+v", err)
+		return fmt.Errorf("sshClient failed to open session stdin pipe: %w", err)
 	}
 
 	wg := sync.WaitGroup{}
@@ -102,8 +95,8 @@ func (sshc *sshClient) SendFile(ctx context.Context,
 
 	session.Stdout = stdout
 	session.Stderr = stderr
-	if err = session.Start("scp -t /usr/local/bin/gonf-run"); err != nil {
-		return fmt.Errorf("sshClient failed to run scp: %+v", err)
+	if err := session.Start("scp -t /usr/local/bin/gonf-run"); err != nil {
+		return fmt.Errorf("failed to run scp: %w", err)
 	}
 	go func() {
 		defer wg.Done()
@@ -114,11 +107,7 @@ func (sshc *sshClient) SendFile(ctx context.Context,
 
 	go func() {
 		defer wg.Done()
-		defer func() {
-			if e := w.Close(); e != nil {
-				errCh <- e
-			}
-		}()
+		defer w.Close()
 		// Write "C{mode} {size} {filename}\n"
 		if _, e := fmt.Fprintf(w, "C%#o %d %s\n", 0700, fi.Size(), "gonf-run"); e != nil {
 			errCh <- e
@@ -135,8 +124,7 @@ func (sshc *sshClient) SendFile(ctx context.Context,
 		}
 	}()
 
-	var cancel context.CancelFunc
-	ctx, cancel = context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
 	defer cancel()
 
 	// wait for all waitgroup.Done() or the timeout
@@ -157,6 +145,5 @@ func (sshc *sshClient) SendFile(ctx context.Context,
 			return err
 		}
 	}
-
 	return nil
 }

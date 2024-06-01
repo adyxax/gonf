@@ -1,7 +1,7 @@
 package gonf
 
 import (
-	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/user"
@@ -29,10 +29,10 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 		if group, err := user.LookupGroup(p.group.String()); err != nil {
 			return BROKEN, err
 		} else {
-			if groupID, err := strconv.Atoi(group.Gid); err != nil {
+			if groupId, err := strconv.Atoi(group.Gid); err != nil {
 				return BROKEN, err
 			} else {
-				g = &IntValue{groupID}
+				g = &IntValue{groupId}
 				p.group = g
 			}
 		}
@@ -46,10 +46,10 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 		if user, err := user.Lookup(p.user.String()); err != nil {
 			return BROKEN, err
 		} else {
-			if userID, err := strconv.Atoi(user.Uid); err != nil {
+			if userId, err := strconv.Atoi(user.Uid); err != nil {
 				return BROKEN, err
 			} else {
-				u = &IntValue{userID}
+				u = &IntValue{userId}
 				p.group = u
 			}
 		}
@@ -75,7 +75,7 @@ func (p *Permissions) resolve(filename string) (Status, error) {
 				status = REPAIRED
 			}
 		} else {
-			return BROKEN, errors.New("unsupported operating system")
+			return BROKEN, fmt.Errorf("unsupported operating system")
 		}
 	}
 	return status, nil

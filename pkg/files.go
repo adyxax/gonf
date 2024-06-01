@@ -139,16 +139,12 @@ func resolveFiles() (status Status) {
 	return
 }
 
-func sha256sumOfFile(filename string) (hash []byte, err error) {
+func sha256sumOfFile(filename string) ([]byte, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		if e := f.Close(); err == nil {
-			err = e
-		}
-	}()
+	defer f.Close()
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return nil, err
@@ -156,16 +152,12 @@ func sha256sumOfFile(filename string) (hash []byte, err error) {
 	return h.Sum(nil), nil
 }
 
-func writeFile(filename string, contents []byte) (err error) {
+func writeFile(filename string, contents []byte) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		if e := f.Close(); err == nil {
-			err = e
-		}
-	}()
+	defer f.Close()
 	_, err = f.Write(contents)
 	return err
 }

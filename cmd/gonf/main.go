@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -25,7 +24,7 @@ func main() {
 		os.Stdout,
 		os.Stderr,
 	); err != nil {
-		fmt.Fprintf(os.Stderr, "%+v\n", err)
+		fmt.Fprintf(os.Stderr, "%s\n", err)
 		os.Exit(1)
 	}
 }
@@ -41,7 +40,8 @@ func run(ctx context.Context,
 	defer cancel()
 	f := flag.NewFlagSet(`gonf COMMAND [-FLAG]
 where COMMAND is one of:
-  * build: build configurations for one or more hosts
+  * build: build configuration for a host
+  * deploy: deploy configuration for a host
   * help: show contextual help
   * version: show build version and time
 where FLAG can be one or more of`, flag.ContinueOnError)
@@ -49,13 +49,11 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	f.BoolVar(&helpMode, "help", false, "show contextual help")
 	f.StringVar(&configDir, "config", "", "(REQUIRED for most commands) path to a gonf configurations repository (overrides the GONF_CONFIG environment variable)")
 	f.SetOutput(stderr)
-	if err := f.Parse(args[1:]); err != nil {
-		return err
-	}
+	f.Parse(args[1:])
 
 	if f.NArg() < 1 {
 		f.Usage()
-		return errors.New("no command given")
+		return fmt.Errorf("no command given")
 	}
 	cmd := f.Arg(0)
 	argsTail := f.Args()[1:]
@@ -70,7 +68,7 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 			configDir = getenv("GONF_CONFIG")
 			if configDir == "" {
 				f.Usage()
-				return errors.New("the GONF_CONFIG environment variable is unset and the -config FLAG is missing. Please use one or the other")
+				return fmt.Errorf("the GONF_CONFIG environment variable is unset and the -config FLAG is missing. Please use one or the other")
 			}
 		}
 		switch cmd {

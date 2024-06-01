@@ -1,7 +1,7 @@
 package systemd
 
 import (
-	"errors"
+	"fmt"
 	"os/exec"
 
 	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
@@ -64,6 +64,6 @@ func systemdService(name, state string) (gonf.Status, error) {
 			return gonf.KEPT, nil
 		}
 	default:
-		return gonf.BROKEN, errors.New("unsupported systemctl operation " + state)
+		return gonf.BROKEN, fmt.Errorf("unsupported systemctl operation " + state)
 	}
 }
