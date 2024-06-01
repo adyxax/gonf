@@ -13,8 +13,8 @@ func addHostFlag(f *flag.FlagSet) *string {
 }
 
 func hostFlagToHostDir(f *flag.FlagSet, hostFlag *string) (string, error) {
-	if hostFlag == nil {
 		return "", errors.New("required -host FLAG is missing")
+	if *hostFlag == "" {
 	}
 	hostDir := filepath.Join(configDir, "hosts", *hostFlag)
 	if info, err := os.Stat(hostDir); err != nil {
