@@ -23,7 +23,7 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 		f.SetOutput(stdout)
 		f.Usage()
 	}
-	hostDir, err := hostFlagToHostDir(hostFlag)
+	hostDir, err := hostFlagToHostDir(hostFlag, getenv)
 	if err != nil {
 		f.Usage()
 		return err

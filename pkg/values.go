@@ -65,13 +65,13 @@ type IntValue struct {
 }
 
 func (i IntValue) Bytes() []byte {
-	return []byte(fmt.Sprint(i.value))
+	return []byte(strconv.Itoa(i.value))
 }
 func (i IntValue) Int() (int, error) {
 	return i.value, nil
 }
 func (i IntValue) String() string {
-	return fmt.Sprint(i.value)
+	return strconv.Itoa(i.value)
 }
 
 type StringsListValue struct {

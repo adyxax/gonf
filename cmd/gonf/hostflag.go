@@ -8,12 +8,17 @@ import (
 )
 
 func addHostFlag(f *flag.FlagSet) *string {
-	return f.String("host", "", "(REQUIRED) a valid $GONF_CONFIG/hosts/ subdirectory")
+	return f.String("host", "", "(REQUIRED) a valid $GONF_CONFIG/hosts/ subdirectory (overrides the GONF_HOST environment variable)")
 }
 
-func hostFlagToHostDir(hostFlag *string) (string, error) {
+func hostFlagToHostDir(hostFlag *string,
+	getenv func(string) string,
+) (string, error) {
 	if *hostFlag == "" {
-		return "", fmt.Errorf("required -host FLAG is missing")
+		*hostFlag = getenv("GONF_HOST")
+		if *hostFlag == "" {
+			return "", fmt.Errorf("the GONF_HOST environment variable is unset and the -host FLAG is missing. Please use one or the other")
+		}
 	}
 	hostDir := filepath.Join(configDir, "hosts", *hostFlag)
 	if info, err := os.Stat(hostDir); err != nil {
