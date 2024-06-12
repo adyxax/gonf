@@ -1,43 +1,31 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"io"
 	"log/slog"
 	"path/filepath"
 )
 
-func cmdDeploy(ctx context.Context,
-	f *flag.FlagSet,
-	args []string,
-	getenv func(string) string,
-	stdout, stderr io.Writer,
-) error {
-	f.Init(`gonf deploy [-FLAG]
+func (env *Env) cmdDeploy() error {
+	env.flagSet.Init(`gonf deploy [-FLAG]
 where FLAG can be one or more of`, flag.ContinueOnError)
-	hostFlag := addHostFlag(f)
-	f.SetOutput(stderr)
-	f.Parse(args)
-	if helpMode {
-		f.SetOutput(stdout)
-		f.Usage()
+	hostFlag := env.addHostFlag()
+	env.flagSet.SetOutput(env.stderr)
+	env.flagSet.Parse(env.args)
+	if env.helpMode {
+		env.flagSet.SetOutput(env.stdout)
+		env.flagSet.Usage()
 	}
-	hostDir, err := hostFlagToHostDir(hostFlag, getenv)
+	hostDir, err := env.hostFlagToHostDir(hostFlag)
 	if err != nil {
-		f.Usage()
+		env.flagSet.Usage()
 		return err
 	}
-	return runDeploy(ctx, getenv, stdout, stderr, *hostFlag, hostDir)
+	return env.runDeploy(*hostFlag, hostDir)
 }
 
-func runDeploy(ctx context.Context,
-	getenv func(string) string,
-	stdout, stderr io.Writer,
-	hostFlag string,
-	hostDir string,
-) error {
-	sshc, err := newSSHClient(ctx, getenv, hostFlag+":22")
+func (env *Env) runDeploy(hostFlag string, hostDir string) error {
+	sshc, err := env.newSSHClient(hostFlag + ":22")
 	if err != nil {
 		slog.Error("deploy", "action", "newSshClient", "error", err)
 		return err
@@ -48,7 +36,7 @@ func runDeploy(ctx context.Context,
 		}
 	}()
 
-	if err = sshc.SendFile(ctx, stdout, stderr, filepath.Join(hostDir, hostFlag)); err != nil {
+	if err = sshc.SendFile(filepath.Join(hostDir, hostFlag)); err != nil {
 		slog.Error("deploy", "action", "SendFile", "error", err)
 	}
 

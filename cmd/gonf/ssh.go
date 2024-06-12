@@ -18,22 +18,30 @@ import (
 type sshClient struct {
 	agentConn net.Conn
 	client    *ssh.Client
+	ctx       context.Context
+	getenv    func(string) string
+	stdout    io.Writer
+	stderr    io.Writer
 }
 
-func newSSHClient(context context.Context,
-	getenv func(string) string,
-	destination string,
-) (*sshClient, error) {
-	var sshc sshClient
+func (env *Env) newSSHClient(destination string) (*sshClient, error) {
+	sshc := sshClient{
+		agentConn: nil,
+		client:    nil,
+		ctx:       env.ctx,
+		getenv:    env.getenv,
+		stdout:    env.stdout,
+		stderr:    env.stderr,
+	}
 	var err error
 
-	socket := getenv("SSH_AUTH_SOCK")
+	socket := sshc.getenv("SSH_AUTH_SOCK")
 	if sshc.agentConn, err = net.Dial("unix", socket); err != nil {
 		return nil, fmt.Errorf("failed to open SSH_AUTH_SOCK: %w", err)
 	}
 	agentClient := agent.NewClient(sshc.agentConn)
 
-	hostKeyCallback, err := knownhosts.New(filepath.Join(getenv("HOME"), ".ssh/known_hosts"))
+	hostKeyCallback, err := knownhosts.New(filepath.Join(sshc.getenv("HOME"), ".ssh/known_hosts"))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create hostkeycallback function: %w", err)
 	}
@@ -62,11 +70,7 @@ func (sshc *sshClient) Close() error {
 	return nil
 }
 
-func (sshc *sshClient) SendFile(
-	ctx context.Context,
-	stdout, stderr io.Writer,
-	filename string,
-) error {
+func (sshc *sshClient) SendFile(filename string) error {
 	session, err := sshc.client.NewSession()
 	if err != nil {
 		return fmt.Errorf("failed to create ssh client session: %w", err)
@@ -93,8 +97,8 @@ func (sshc *sshClient) SendFile(
 	wg.Add(2)
 	errCh := make(chan error, 2)
 
-	session.Stdout = stdout
-	session.Stderr = stderr
+	session.Stdout = sshc.stdout
+	session.Stderr = sshc.stderr
 	if err := session.Start("scp -t /usr/local/bin/gonf-run"); err != nil {
 		return fmt.Errorf("failed to run scp: %w", err)
 	}
@@ -124,7 +128,7 @@ func (sshc *sshClient) SendFile(
 		}
 	}()
 
-	ctx, cancel := context.WithTimeout(ctx, 60*time.Second)
+	ctx, cancel := context.WithTimeout(sshc.ctx, 60*time.Second)
 	defer cancel()
 
 	// wait for all waitgroup.Done() or the timeout
