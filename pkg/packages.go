@@ -35,7 +35,7 @@ func (p *PackagePromise) IfRepaired(ps ...Promise) Promise {
 	return p
 }
 
-func (p *PackagePromise) Promise() Promise {
+func (p *PackagePromise) Promise() *PackagePromise {
 	packages = append(packages, p)
 	return p
 }

@@ -43,7 +43,7 @@ func (c *CommandPromise) IfRepaired(p ...Promise) Promise {
 	return c
 }
 
-func (c *CommandPromise) Promise() Promise {
+func (c *CommandPromise) Promise() *CommandPromise {
 	commands = append(commands, c)
 	return c
 }

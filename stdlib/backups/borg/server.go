@@ -20,7 +20,7 @@ func (b *BorgServer) IfRepaired(p ...gonf.Promise) gonf.Promise {
 	return b
 }
 
-func (b *BorgServer) Promise() gonf.Promise {
+func (b *BorgServer) Promise() *BorgServer {
 	gonf.MakeCustomPromise(b).Promise()
 	return b
 }

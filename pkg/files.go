@@ -87,7 +87,7 @@ func (f *FilePromise) IfRepaired(p ...Promise) Promise {
 	return f
 }
 
-func (f *FilePromise) Promise() Promise {
+func (f *FilePromise) Promise() *FilePromise {
 	files = append(files, f)
 	return f
 }

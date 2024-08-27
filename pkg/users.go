@@ -46,7 +46,7 @@ func (u *UserPromise) IfRepaired(p ...Promise) Promise {
 	return u
 }
 
-func (u *UserPromise) Promise() Promise {
+func (u *UserPromise) Promise() *UserPromise {
 	users = append(users, u)
 	return u
 }

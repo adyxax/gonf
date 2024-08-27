@@ -42,7 +42,7 @@ func (s *ServicePromise) IfRepaired(p ...Promise) Promise {
 	return s
 }
 
-func (s *ServicePromise) Promise() Promise {
+func (s *ServicePromise) Promise() *ServicePromise {
 	services = append(services, s)
 	return s
 }

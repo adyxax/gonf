@@ -2,30 +2,9 @@ package gonf
 
 type Promise interface {
 	IfRepaired(...Promise) Promise
-	Promise() Promise
 	Resolve()
 	Status() Status
 }
-
-//type Operation int
-//
-//const (
-//	AND = iota
-//	OR
-//	NOT
-//)
-//
-//func (o Operation) String() string {
-//	switch o {
-//	case AND:
-//		return "and"
-//	case OR:
-//		return "or"
-//	case NOT:
-//		return "not"
-//	}
-//	panic("unknown")
-//}
 
 type Status int
 

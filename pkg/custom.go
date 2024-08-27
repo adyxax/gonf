@@ -21,7 +21,7 @@ func (c *CustomPromise) IfRepaired(p ...Promise) Promise {
 	return c
 }
 
-func (c *CustomPromise) Promise() Promise {
+func (c *CustomPromise) Promise() *CustomPromise {
 	customPromises = append(customPromises, c)
 	return c
 }
