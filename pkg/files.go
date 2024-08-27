@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"log/slog"
@@ -17,14 +18,35 @@ func init() {
 	files = make([]*FilePromise, 0)
 }
 
+type FileType int
+
+const (
+	FILE = iota
+	DIRECTORY
+)
+
 type FilePromise struct {
 	chain          []Promise
 	contents       Value
 	dirPermissions *Permissions
 	err            error
 	filename       Value
+	fileType       FileType
 	permissions    *Permissions
 	status         Status
+}
+
+func Directory(filename any) *FilePromise {
+	return &FilePromise{
+		chain:          nil,
+		contents:       nil,
+		dirPermissions: nil,
+		err:            nil,
+		filename:       interfaceToTemplateValue(filename),
+		fileType:       DIRECTORY,
+		permissions:    nil,
+		status:         PROMISED,
+	}
 }
 
 func File(filename any) *FilePromise {
@@ -34,6 +56,7 @@ func File(filename any) *FilePromise {
 		dirPermissions: nil,
 		err:            nil,
 		filename:       interfaceToTemplateValue(filename),
+		fileType:       FILE,
 		permissions:    nil,
 		status:         PROMISED,
 	}
@@ -71,31 +94,38 @@ func (f *FilePromise) Promise() Promise {
 
 func (f *FilePromise) Resolve() {
 	filename := f.filename.String()
-	if f.dirPermissions != nil {
-		if f.status, f.err = makeDirectoriesHierarchy(filepath.Dir(filename), f.dirPermissions); f.err != nil {
+	if f.status, f.err = makeDirectoriesHierarchy(filepath.Dir(filename), f.dirPermissions); f.err != nil {
+		return
+	}
+	switch f.fileType {
+	case DIRECTORY:
+		if f.status, f.err = makeDirectoriesHierarchy(filepath.Clean(filename), f.dirPermissions); f.err != nil {
 			return
 		}
-	}
-	if f.contents != nil {
-		var sumFile []byte
-		sumFile, f.err = sha256sumOfFile(filename)
-		if f.err != nil {
-			if !errors.Is(f.err, fs.ErrNotExist) {
-				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
-				f.status = BROKEN
-				return
+	case FILE:
+		if f.contents != nil {
+			var sumFile []byte
+			sumFile, f.err = sha256sumOfFile(filename)
+			if f.err != nil {
+				if !errors.Is(f.err, fs.ErrNotExist) {
+					slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
+					f.status = BROKEN
+					return
+				}
+			}
+			contents := f.contents.Bytes()
+			sumContents := sha256sum(contents)
+			if !bytes.Equal(sumFile, sumContents) {
+				if f.err = writeFile(filename, contents); f.err != nil {
+					f.status = BROKEN
+					slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
+					return
+				}
+				f.status = REPAIRED
 			}
 		}
-		contents := f.contents.Bytes()
-		sumContents := sha256sum(contents)
-		if !bytes.Equal(sumFile, sumContents) {
-			if f.err = writeFile(filename, contents); f.err != nil {
-				f.status = BROKEN
-				slog.Error("file", "filename", f.filename, "status", f.status, "error", f.err)
-				return
-			}
-			f.status = REPAIRED
-		}
+	default:
+		panic(fmt.Errorf("unknown File type enum value %d", f.fileType))
 	}
 	if f.permissions != nil {
 		var status Status
