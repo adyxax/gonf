@@ -16,7 +16,8 @@ func isEnabled(name string) bool {
 }
 
 func isRunning(name string) bool {
-	return systemctlShow(name, "SubState") == "running"
+	value := systemctlShow(name, "SubState")
+	return value == "running" || value == "waiting"
 }
 
 func systemctl(name, operation string) (gonf.Status, error) {
