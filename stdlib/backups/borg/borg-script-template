@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+on_exit() {
+  exit $?
+}
+trap on_exit EXIT
+
+archiveName="%s-%s-$(date +%%Y-%%m-%%dT%%H:%%M:%%S)"
+archiveSuffix=".failed"
+
+# Run borg init if the repo doesn't exist yet
+if ! borg list > /dev/null; then
+  borg init --encryption none
+fi
+(
+  borg create \
+    --compression auto,zstd \
+    "::${archiveName}${archiveSuffix}" \
+    '%s'
+)
+borg rename "::${archiveName}${archiveSuffix}" "${archiveName}"
+
+borg prune \
+  --keep-daily=14 --keep-monthly=3 --keep-weekly=4 \
+  --glob-archives '%s-%s*'
+borg compact

@@ -1,0 +1,15 @@
+[Unit]
+Description=BorgBackup job %s
+
+[Service]
+Environment="BORG_REPO=ssh://borg@%s/srv/borg/%s"
+Environment="BORG_RSH=ssh -i /etc/borg/%s.key"
+CPUSchedulingPolicy=idle
+ExecStart=/etc/borg/%s.sh
+Group=root
+IOSchedulingClass=idle
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/root/.config/borg
+ReadWritePaths=/root/.cache/borg
+User=root

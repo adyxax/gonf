@@ -1,0 +1,9 @@
+[Unit]
+Description=BorgBackup job %s timer
+
+[Timer]
+OnCalendar=daily
+Persistent=false
+
+[Install]
+WantedBy=timers.target

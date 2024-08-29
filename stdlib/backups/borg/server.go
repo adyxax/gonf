@@ -73,7 +73,6 @@ func (b *BorgServer) Resolve() {
 	case gonf.REPAIRED:
 		b.status = gonf.REPAIRED
 	}
-	// TODO init repositories? or let the borg client do it?
 }
 
 func (b BorgServer) Status() gonf.Status {
