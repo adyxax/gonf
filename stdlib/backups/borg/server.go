@@ -15,13 +15,18 @@ type BorgServer struct {
 	status  gonf.Status
 }
 
+var borgServer *BorgServer = nil
+
 func (b *BorgServer) IfRepaired(p ...gonf.Promise) gonf.Promise {
 	b.chain = append(b.chain, p...)
 	return b
 }
 
 func (b *BorgServer) Promise() *BorgServer {
-	gonf.MakeCustomPromise(b).Promise()
+	if b.status == gonf.DECLARED {
+		b.status = gonf.PROMISED
+		gonf.MakeCustomPromise(b).Promise()
+	}
 	return b
 }
 
@@ -80,13 +85,16 @@ func (b BorgServer) Status() gonf.Status {
 }
 
 func Server() *BorgServer {
-	return &BorgServer{
-		chain:   nil,
-		clients: make(map[string][]byte),
-		path:    "/srv/borg/",
-		user:    "borg",
-		status:  gonf.PROMISED,
+	if borgServer == nil {
+		borgServer = &BorgServer{
+			chain:   nil,
+			clients: make(map[string][]byte),
+			path:    "/srv/borg/",
+			user:    "borg",
+			status:  gonf.DECLARED,
+		}
 	}
+	return borgServer
 }
 
 func (b *BorgServer) Add(name string, publicKey []byte) *BorgServer {

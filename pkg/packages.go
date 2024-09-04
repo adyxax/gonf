@@ -19,7 +19,7 @@ func Package(names ...string) *PackagePromise {
 		chain:  nil,
 		err:    nil,
 		names:  names,
-		status: PROMISED,
+		status: DECLARED,
 	}
 }
 
@@ -36,7 +36,10 @@ func (p *PackagePromise) IfRepaired(ps ...Promise) Promise {
 }
 
 func (p *PackagePromise) Promise() *PackagePromise {
-	packages = append(packages, p)
+	if p.status == DECLARED {
+		p.status = PROMISED
+		packages = append(packages, p)
+	}
 	return p
 }
 

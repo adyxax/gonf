@@ -33,13 +33,18 @@ type BorgClient struct {
 	status gonf.Status
 }
 
+var borgClient *BorgClient = nil
+
 func (b *BorgClient) IfRepaired(p ...gonf.Promise) gonf.Promise {
 	b.chain = append(b.chain, p...)
 	return b
 }
 
 func (b *BorgClient) Promise() *BorgClient {
-	gonf.MakeCustomPromise(b).Promise()
+	if b.status == gonf.DECLARED {
+		b.status = gonf.PROMISED
+		gonf.MakeCustomPromise(b).Promise()
+	}
 	return b
 }
 
@@ -101,12 +106,15 @@ func (b BorgClient) Status() gonf.Status {
 }
 
 func Client() *BorgClient {
-	return &BorgClient{
-		chain:  nil,
-		jobs:   make(map[string]*Job),
-		path:   "/etc/borg/",
-		status: gonf.PROMISED,
+	if borgClient == nil {
+		borgClient = &BorgClient{
+			chain:  nil,
+			jobs:   make(map[string]*Job),
+			path:   "/etc/borg/",
+			status: gonf.DECLARED,
+		}
 	}
+	return borgClient
 }
 
 func (b *BorgClient) Add(name string, path string, privateKey []byte, hostname string) *BorgClient {

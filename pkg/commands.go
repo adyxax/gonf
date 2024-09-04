@@ -23,7 +23,7 @@ func CommandWithEnv(env []string, cmd string, args ...string) *CommandPromise {
 		cmd:    cmd,
 		env:    env,
 		err:    nil,
-		status: PROMISED,
+		status: DECLARED,
 	}
 }
 
@@ -44,7 +44,10 @@ func (c *CommandPromise) IfRepaired(p ...Promise) Promise {
 }
 
 func (c *CommandPromise) Promise() *CommandPromise {
-	commands = append(commands, c)
+	if c.status == DECLARED {
+		c.status = PROMISED
+		commands = append(commands, c)
+	}
 	return c
 }
 

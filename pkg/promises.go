@@ -9,7 +9,8 @@ type Promise interface {
 type Status int
 
 const (
-	PROMISED = iota
+	DECLARED = iota
+	PROMISED
 	BROKEN
 	KEPT
 	REPAIRED
@@ -17,6 +18,8 @@ const (
 
 func (s Status) String() string {
 	switch s {
+	case DECLARED:
+		return "declared"
 	case PROMISED:
 		return "promised"
 	case BROKEN:

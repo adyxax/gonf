@@ -45,7 +45,7 @@ func Directory(filename any) *FilePromise {
 		filename:       interfaceToTemplateValue(filename),
 		fileType:       DIRECTORY,
 		permissions:    nil,
-		status:         PROMISED,
+		status:         DECLARED,
 	}
 }
 
@@ -58,7 +58,7 @@ func File(filename any) *FilePromise {
 		filename:       interfaceToTemplateValue(filename),
 		fileType:       FILE,
 		permissions:    nil,
-		status:         PROMISED,
+		status:         DECLARED,
 	}
 }
 
@@ -88,7 +88,10 @@ func (f *FilePromise) IfRepaired(p ...Promise) Promise {
 }
 
 func (f *FilePromise) Promise() *FilePromise {
-	files = append(files, f)
+	if f.status == DECLARED {
+		f.status = PROMISED
+		files = append(files, f)
+	}
 	return f
 }
 
