@@ -8,7 +8,7 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
+	gonf "git.adyxax.org/adyxax/gonf/pkg"
 )
 
 //go:embed borg-script-template

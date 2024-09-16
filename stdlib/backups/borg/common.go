@@ -1,6 +1,6 @@
 package borg
 
-import gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
+import gonf "git.adyxax.org/adyxax/gonf/pkg"
 
 func installBorgPackage() gonf.Status {
 	packag := gonf.Package("borgbackup")

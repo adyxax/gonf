@@ -3,9 +3,9 @@ package debian
 import (
 	_ "embed"
 
-	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
-	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/linux"
-	"git.adyxax.org/adyxax/gonf/v2/stdlib/os/systemd"
+	gonf "git.adyxax.org/adyxax/gonf/pkg"
+	"git.adyxax.org/adyxax/gonf/stdlib/os/linux"
+	"git.adyxax.org/adyxax/gonf/stdlib/os/systemd"
 )
 
 //go:embed apt-norecommends

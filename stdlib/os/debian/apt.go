@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	gonf "git.adyxax.org/adyxax/gonf/v2/pkg"
+	gonf "git.adyxax.org/adyxax/gonf/pkg"
 )
 
 var packages map[string]string

@@ -1,7 +1,7 @@
 package linux
 
 import (
-	"git.adyxax.org/adyxax/gonf/v2/pkg"
+	"git.adyxax.org/adyxax/gonf/pkg"
 	"os/exec"
 )
 
