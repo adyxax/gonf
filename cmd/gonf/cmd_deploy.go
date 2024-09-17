@@ -11,7 +11,7 @@ func (env *Env) cmdDeploy() error {
 where FLAG can be one or more of`, flag.ContinueOnError)
 	hostFlag := env.addHostFlag()
 	env.flagSet.SetOutput(env.stderr)
-	env.flagSet.Parse(env.args)
+	_ = env.flagSet.Parse(env.args)
 	if env.helpMode {
 		env.flagSet.SetOutput(env.stdout)
 		env.flagSet.Usage()

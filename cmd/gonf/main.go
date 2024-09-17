@@ -41,9 +41,14 @@ where FLAG can be one or more of`, flag.ContinueOnError)
 	env.flagSet.BoolVar(&env.helpMode, "help", false, "show contextual help")
 	env.flagSet.StringVar(&env.configDir, "config", "", "(REQUIRED for most commands) path to a gonf configurations repository (overrides the GONF_CONFIG environment variable)")
 	env.flagSet.SetOutput(env.stderr)
-	env.flagSet.Parse(env.args[1:])
+	_ = env.flagSet.Parse(env.args[1:])
 
 	if env.flagSet.NArg() < 1 {
+		if env.helpMode {
+			env.flagSet.SetOutput(env.stdout)
+			env.flagSet.Usage()
+			return nil
+		}
 		env.flagSet.Usage()
 		return fmt.Errorf("no command given")
 	}
