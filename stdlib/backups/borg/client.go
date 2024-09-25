@@ -81,7 +81,7 @@ func (b *BorgClient) Resolve() {
 			hostname,
 			name,
 			job.path,
-			job.hostname, name)).
+			hostname, name)).
 			Resolve()
 		service_name := fmt.Sprintf("borgbackup-job-%s.service", name)
 		gonf.File(filepath.Join(systemdSystemPath, service_name)).
