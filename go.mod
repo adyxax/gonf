@@ -1,7 +1,7 @@
 module git.adyxax.org/adyxax/gonf
 
-go 1.23.1
+go 1.23.3
 
-require golang.org/x/crypto v0.27.0
+require golang.org/x/crypto v0.29.0
 
-require golang.org/x/sys v0.25.0 // indirect
+require golang.org/x/sys v0.27.0 // indirect
