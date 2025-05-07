@@ -10,7 +10,8 @@ import (
 
 var builtinTemplateFunctions = map[string]any{
 	//"encodeURIQueryParameter": url.QueryEscape,
-	"var": getVariable,
+	"fact": isFact,
+	"var":  getVariable,
 }
 
 func FilterSlice[T any](slice *[]T, predicate func(T) bool) {

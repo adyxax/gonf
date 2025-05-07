@@ -23,6 +23,7 @@ type FileType int
 const (
 	FILE = iota
 	DIRECTORY
+	// TODO symlink
 )
 
 type FilePromise struct {
