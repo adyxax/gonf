@@ -1,6 +1,6 @@
 module git.adyxax.org/adyxax/gonf
 
-go 1.24.2
+go 1.24.3
 
 require golang.org/x/crypto v0.38.0
 
